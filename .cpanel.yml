@@ -1,0 +1,22 @@
+---
+deployment:
+  tasks:
+    # ── Step 1: WordPress core DB update ─────────────────────────────────────
+    - export WP_PATH="$HOME/public_html"
+    - if [ ! -f "$WP_PATH/wp-config.php" ]; then echo "WordPress not found at $WP_PATH"; exit 1; fi
+    - /usr/local/bin/wp core update-db --path=$WP_PATH --allow-root
+
+    # ── Step 2: Flush all caches ──────────────────────────────────────────────
+    - /usr/local/bin/wp cache flush --path=$WP_PATH --allow-root
+    - /usr/local/bin/wp rewrite flush --path=$WP_PATH --allow-root
+
+    # ── Step 3: Set correct file permissions ──────────────────────────────────
+    - find $WP_PATH -type d -exec chmod 755 {} \;
+    - find $WP_PATH -type f -exec chmod 644 {} \;
+    - chmod 600 $WP_PATH/wp-config.php
+
+    # ── Step 4: Run any pending SQL migrations ────────────────────────────────
+    - if ls $WP_PATH/db/migrations/*.sql 1>/dev/null 2>&1; then for f in $WP_PATH/db/migrations/*.sql; do /usr/local/bin/wp db query "$(cat $f)" --path=$WP_PATH --allow-root; done; fi
+
+    # ── Step 5: Clear OPcache (if enabled) ───────────────────────────────────
+    - php -r "if(function_exists('opcache_reset')) opcache_reset();" || true

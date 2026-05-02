@@ -1,0 +1,26 @@
+# WordPress sensitive / runtime files
+wp-config.php
+wp-content/
+*.log
+error_log
+sitemap.xml
+sitemap.xml.gz
+.maintenance
+
+# Environment
+.env
+.env.*
+!.env.example
+
+# Dependencies / build output
+node_modules/
+vendor/
+dist/
+build/
+
+# OS & editors
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.swp
